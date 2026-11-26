@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>备货需求填写</title>
+<style>
+  :root{
+    --paper:#f6f3ea;
+    --card:#fffefb;
+    --ink:#1a1815;
+    --ink2:#5c564b;
+    --ink3:#928b7c;
+    --line:#e3dbc9;
+    --line2:#c9bfa9;
+    --accent:#a8442a;
+    --accent-soft:#f6e6df;
+    --ok:#2c6a4e;
+    --warn:#b3341f;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Source Han Sans SC",sans-serif;
+    color:var(--ink);
+    background:var(--paper);
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='0.045'/%3E%3C/svg%3E");
+    -webkit-font-smoothing:antialiased;
+    line-height:1.5;
+  }
+  .wrap{max-width:1000px;margin:0 auto;padding:34px 20px 80px}
+
+  /* ---------- masthead ---------- */
+  .kicker{
+    font-size:11px;letter-spacing:.32em;text-transform:uppercase;
+    color:var(--accent);font-weight:600;margin-bottom:14px;
+    display:flex;align-items:center;gap:10px;
+  }
+  .kicker::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--line2),transparent)}
+  h1{
+    font-family:"Songti SC","STSong","SimSun","Noto Serif SC",serif;
+    font-size:40px;line-height:1.15;margin:0 0 12px;letter-spacing:.02em;font-weight:700;
+  }
+  .lede{margin:0;color:var(--ink2);font-size:14.5px;max-width:680px}
+  .lede b{color:var(--ink);font-weight:600}
+
+  /* ---------- tabs ---------- */
+  .tabs{display:flex;gap:6px;margin:22px 0 0;border-bottom:1px solid var(--line2);flex-wrap:wrap}
+  .tab{
+    font-family:inherit;font-size:14px;cursor:pointer;
+    border:1px solid transparent;border-bottom:0;
+    background:transparent;color:var(--ink3);
+    padding:10px 18px;border-radius:10px 10px 0 0;
+    display:inline-flex;align-items:center;gap:8px;
+    transform:none;
+  }
+  .tab:hover{color:var(--ink);background:rgba(255,255,255,.5);transform:none;border-color:transparent;border-bottom:0}
+  .tab .badge{
+    font-size:11px;padding:1px 7px;border-radius:999px;
+    background:#eae2d1;color:var(--ink2);font-variant-numeric:tabular-nums;
+  }
+  .tab.on{
+    background:var(--card);color:var(--ink);font-weight:600;
+    border-color:var(--line);border-bottom-color:var(--card);
+    margin-bottom:-1px;box-shadow:0 1px 0 var(--card);
+  }
+  .tab.on .badge{background:var(--accent-soft);color:var(--accent)}
+
+  .page{display:none;padding-top:18px}
+  .page.on{display:block}
+
+  .rules{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px}
+  .rule{
+    font-size:12.5px;color:var(--ink2);border:1px solid var(--line);
+    background:rgba(255,255,255,.55);border-radius:999px;padding:5px 12px;
+    display:flex;align-items:center;gap:7px;
+  }
+  .rule i{width:5px;height:5px;border-radius:50%;background:var(--accent);flex:none}
+
+  /* ---------- toolbar ---------- */
+  .bar{
+    display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+    padding:12px 14px;margin-bottom:-1px;
+    background:rgba(255,254,251,.9);
+    border:1px solid var(--line);border-radius:14px 14px 0 0;
+    border-bottom-color:var(--line2);
+  }
+  .stats{display:flex;gap:18px;align-items:baseline;margin-right:auto;flex-wrap:wrap}
+  .stat{display:flex;align-items:baseline;gap:6px}
+  .stat .n{font-family:"Songti SC","STSong",serif;font-size:21px;font-weight:700;font-variant-numeric:tabular-nums}
+  .stat .l{font-size:11.5px;color:var(--ink3);letter-spacing:.06em}
+  .stat.sum .n{color:var(--accent)}
+
+  .btns{display:flex;gap:8px;flex-wrap:wrap}
+  button{
+    font-family:inherit;font-size:13px;cursor:pointer;
+    border-radius:9px;padding:8px 14px;border:1px solid var(--line2);
+    background:#fff;color:var(--ink);transition:.18s ease;
+    display:inline-flex;align-items:center;gap:6px;white-space:nowrap;
+  }
+  button:hover{border-color:var(--ink);transform:translateY(-1px)}
+  button:active{transform:translateY(0)}
+  button.primary{background:var(--ink);border-color:var(--ink);color:#fff}
+  button.primary:hover{background:var(--accent);border-color:var(--accent)}
+  button.ghost{border-color:transparent;background:transparent;color:var(--ink3)}
+  button.ghost:hover{color:var(--warn);border-color:var(--accent-soft);background:var(--accent-soft)}
+
+  /* ---------- sheet ---------- */
+  .sheet{
+    background:var(--card);
+    border:1px solid var(--line);border-radius:0 0 14px 14px;
+    overflow:hidden;
+    box-shadow:0 1px 2px rgba(26,24,21,.04),0 22px 48px -32px rgba(26,24,21,.35);
+  }
+  table{width:100%;border-collapse:collapse;table-layout:fixed}
+  col.op{width:46px}
+  thead th{
+    text-align:left;font-size:11.5px;font-weight:600;letter-spacing:.14em;
+    color:var(--ink2);text-transform:uppercase;
+    padding:11px 16px;background:#faf7f0;
+    border-bottom:1px solid var(--line2);
+  }
+  thead th .req{color:var(--accent);margin-left:2px}
+  thead th.opcol{padding:0}
+  tbody tr{border-bottom:1px solid var(--line);transition:background .15s}
+  tbody tr:last-child{border-bottom:none}
+  tbody tr:hover{background:#fbf8f1}
+  tbody tr:focus-within{background:#fffdf8;box-shadow:inset 3px 0 0 var(--accent)}
+  tbody td{padding:0;position:relative;vertical-align:middle}
+  tbody td:first-child{padding-left:14px}
+  input{
+    width:100%;border:0;background:transparent;outline:none;
+    font-family:inherit;font-size:14.5px;color:var(--ink);
+    padding:12px 8px;font-variant-numeric:tabular-nums;
+  }
+  input::placeholder{color:#c4bcab}
+  input[type=date]{min-width:0}
+  input[type=date]::-webkit-calendar-picker-indicator{opacity:.42;cursor:pointer}
+  input[type=date]::-webkit-calendar-picker-indicator:hover{opacity:.85}
+  input[type=number]{text-align:right;padding-right:10px}
+  input[type=number]::-webkit-outer-spin-button,
+  input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  input[type=number]{-moz-appearance:textfield}
+  input[data-k=wb]{font-weight:600;letter-spacing:.02em}
+  input.bad{box-shadow:inset 0 -2px 0 var(--warn)}
+
+  td.opcell{padding:0;text-align:center}
+  .rowbtn{
+    opacity:0;border:0;background:transparent;color:var(--ink3);
+    padding:5px 6px;border-radius:6px;transition:.15s;line-height:1;
+    font-size:12px;transform:none;
+  }
+  tbody tr:hover .rowbtn,tr:focus-within .rowbtn{opacity:1}
+  .rowbtn:hover{color:var(--warn);background:var(--accent-soft);transform:none}
+
+  .more{
+    display:flex;gap:8px;justify-content:center;padding:16px;
+    background:#fbf8f1;border-top:1px dashed var(--line2);
+  }
+
+  footer{margin-top:18px;font-size:12.5px;color:var(--ink3);line-height:1.9}
+  footer b{color:var(--ink2)}
+
+  /* ---------- toast ---------- */
+  .toast{
+    position:fixed;left:50%;bottom:28px;transform:translate(-50%,20px);
+    background:var(--ink);color:#fff;font-size:13px;padding:10px 18px;
+    border-radius:999px;opacity:0;pointer-events:none;transition:.28s ease;
+    z-index:60;box-shadow:0 12px 30px -12px rgba(0,0,0,.5);
+  }
+  .toast.on{opacity:1;transform:translate(-50%,0)}
+
+  .saved{font-size:11.5px;color:var(--ink3);display:flex;align-items:center;gap:6px}
+  .dot{width:6px;height:6px;border-radius:50%;background:var(--ok);opacity:.9}
+
+  @media (max-width:700px){
+    .wrap{padding:22px 12px 60px}
+    h1{font-size:29px}
+    .lede{font-size:13.5px}
+    .tab{padding:9px 13px;font-size:13px}
+    thead th{padding:10px 8px;font-size:10px;letter-spacing:.04em}
+    input{font-size:15px;padding:13px 5px}
+    tbody td:first-child{padding-left:8px}
+    .stats{gap:12px;width:100%}
+    .bar{padding:10px 12px;gap:10px}
+    .btns{width:100%}
+    .btns button{flex:1;justify-content:center;padding:9px 8px}
+    .rowbtn{opacity:.35}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="kicker">备货计划</div>
+  <h1>备货需求填写</h1>
+  <p class="lede">分两页填写：先在 <b>备货单开白</b> 里录入 WB 开头的备货单号，再到 <b>备货需求填写</b> 里按行填写日期、货品 SKU 与件数。内容自动保存在本机浏览器，填完可导出 CSV 导入协作表格。</p>
+
+  <div class="tabs">
+    <button class="tab on" data-page="wb" type="button">备货单开白 <span class="badge" id="wbBadge">0</span></button>
+    <button class="tab" data-page="req" type="button">备货需求填写 <span class="badge" id="reqBadge">0</span></button>
+  </div>
+
+  <!-- ============ 页一：备货单开白 ============ -->
+  <section class="page on" id="page-wb">
+    <div class="rules">
+      <span class="rule"><i></i>直接输入 WB 开头的备货单号，一行一个</span>
+      <span class="rule"><i></i>自动转大写、自动去空格</span>
+      <span class="rule"><i></i>行数不限，可随时增删</span>
+    </div>
+
+    <div class="bar">
+      <div class="stats">
+        <div class="stat"><span class="n" id="wbN">0</span><span class="l">已填单号</span></div>
+        <div class="saved"><span class="dot"></span><span id="wbSaved">草稿自动保存</span></div>
+      </div>
+      <div class="btns">
+        <button class="ghost" id="wbClear" title="清空本页内容">清空</button>
+        <button id="wbCopy">复制</button>
+        <button class="primary" id="wbCsv">导出 CSV</button>
+      </div>
+    </div>
+
+    <div class="sheet">
+      <table class="t-wb">
+        <colgroup><col><col class="op"></colgroup>
+        <thead>
+          <tr><th>备货单号<span class="req">*</span></th><th class="opcol"></th></tr>
+        </thead>
+        <tbody id="tbodyWb"></tbody>
+      </table>
+      <div class="more">
+        <button id="wbAdd1">＋ 添加一行</button>
+        <button id="wbAdd10">＋ 添加十行</button>
+      </div>
+    </div>
+
+    <footer>
+      <b>填写说明</b><br>
+      · 备货单开白：直接输入 WB 开头的备货单号（如 WB12345678），输入自动转大写并去空格，非 WB 开头会标红提示。<br>
+      · 一行一个单号；填到末行会自动续出新行。<br>
+      · 本页与「备货需求填写」页分开保存，导出也是各自独立的一份 CSV。
+    </footer>
+  </section>
+
+  <!-- ============ 页二：备货需求填写 ============ -->
+  <section class="page" id="page-req">
+    <div class="rules">
+      <span class="rule"><i></i>日期格式 YYYY-MM-DD</span>
+      <span class="rule"><i></i>件数为正整数，单位「件」</span>
+      <span class="rule"><i></i>行数不限，可随时增删</span>
+    </div>
+
+    <div class="bar">
+      <div class="stats">
+        <div class="stat"><span class="n" id="reqN">0</span><span class="l">已填行</span></div>
+        <div class="stat sum"><span class="n" id="reqSum">0</span><span class="l">件合计</span></div>
+        <div class="saved"><span class="dot"></span><span id="reqSaved">草稿自动保存</span></div>
+      </div>
+      <div class="btns">
+        <button class="ghost" id="reqClear" title="清空本页内容">清空</button>
+        <button id="reqCopy">复制表格</button>
+        <button class="primary" id="reqCsv">导出 CSV</button>
+      </div>
+    </div>
+
+    <div class="sheet">
+      <table class="t-req">
+        <colgroup><col style="width:26%"><col style="width:42%"><col style="width:20%"><col class="op"></colgroup>
+        <thead>
+          <tr>
+            <th>日期<span class="req">*</span></th>
+            <th>货品 SKU<span class="req">*</span></th>
+            <th>件数<span class="req">*</span></th>
+            <th class="opcol"></th>
+          </tr>
+        </thead>
+        <tbody id="tbodyReq"></tbody>
+      </table>
+      <div class="more">
+        <button id="reqAdd1">＋ 添加一行</button>
+        <button id="reqAdd10">＋ 添加十行</button>
+      </div>
+    </div>
+
+    <footer>
+      <b>填写说明</b><br>
+      · 日期选择或直接输入，格式统一为 YYYY-MM-DD；件数只填数字，不带单位。<br>
+      · 日期请准确填写，不要空着。<br>
+      · 行数不限，填到末行会自动续出新行。<br>
+      · 填写过程自动保存到本浏览器，关闭页面后再打开可继续；更换电脑或清理浏览器数据会丢失，请及时「导出 CSV」。<br>
+      · 导出的 CSV 含表头三列（日期 / 货品SKU / 件数），可直接在协作表格中导入或粘贴。
+    </footer>
+  </section>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  var toastEl=document.getElementById('toast'), toastTimer=null;
+  function toast(msg){
+    toastEl.textContent=msg;
+    toastEl.classList.add('on');
+    clearTimeout(toastTimer);
+    toastTimer=setTimeout(function(){toastEl.classList.remove('on')},1900);
+  }
+
+  /* ---------------- 页签切换 ---------------- */
+  var tabs=document.querySelectorAll('.tab');
+  Array.prototype.forEach.call(tabs,function(t){
+    t.onclick=function(){
+      Array.prototype.forEach.call(tabs,function(x){x.classList.toggle('on',x===t)});
+      Array.prototype.forEach.call(document.querySelectorAll('.page'),function(p){
+        p.classList.toggle('on', p.id==='page-'+t.getAttribute('data-page'));
+      });
+      window.scrollTo({top:0,behavior:'smooth'});
+    };
+  });
+
+  /* ---------------- 通用填表组件 ---------------- */
+  function mkTable(cfg){
+    var tbody=document.getElementById(cfg.tbody);
+    var inputs=cfg.cols;
+    var timer=null;
+
+    function rowValues(tr){
+      var o={}, els=tr.querySelectorAll('input');
+      inputs.forEach(function(c,i){ o[c.k]={v:els[i].value, el:els[i]}; });
+      return o;
+    }
+    function rowFilled(tr){
+      var els=tr.querySelectorAll('input'), has=false;
+      Array.prototype.forEach.call(els,function(e){ if(e.value.trim()!=='') has=true; });
+      return has;
+    }
+
+    function makeRow(data){
+      var tr=document.createElement('tr'), html='';
+      inputs.forEach(function(c){
+        var a='data-k="'+c.k+'" aria-label="'+c.aria+'"';
+        if(c.type==='text') a+=' type="text" autocomplete="off" spellcheck="false" placeholder="'+c.ph+'"';
+        else if(c.type==='number') a+=' type="number" min="1" step="1" inputmode="numeric" placeholder="'+c.ph+'"';
+        else a+=' type="'+c.type+'"';
+        html+='<td><input '+a+'></td>';
+      });
+      tr.innerHTML=html;
+      var els=tr.querySelectorAll('input');
+      if(data){
+        inputs.forEach(function(c,i){
+          try{ els[i].value=data[c.k]==null?'':data[c.k]; }catch(e){}
+        });
+      }
+      els[els.length-1].addEventListener('blur',function(){
+        if(tr===tbody.lastElementChild && rowFilled(tr)) addRow(null);
+      });
+      return tr;
+    }
+
+    function addRow(data){
+      var tr=makeRow(data);
+      var td=document.createElement('td');
+      td.className='opcell';
+      var b=document.createElement('button');
+      b.className='rowbtn'; b.type='button'; b.title='删除此行';
+      b.innerHTML='&#10005;';
+      b.onclick=function(){
+        if(tbody.children.length<=1){
+          tr.querySelectorAll('input').forEach(function(i){i.value=''});
+        } else { tr.remove(); }
+        score(); save();
+      };
+      td.appendChild(b);
+      tr.appendChild(td);
+      tbody.appendChild(tr);
+      return tr;
+    }
+
+    function allRows(){ return Array.prototype.slice.call(tbody.querySelectorAll('tr')); }
+
+    function score(){
+      var n=0, sum=0;
+      allRows().forEach(function(tr){
+        var v=rowValues(tr);
+        var has=rowFilled(tr);
+        var ok=cfg.validate(v);
+        if(has){
+          n++;
+          if(ok && cfg.qtyKey && v[cfg.qtyKey] && v[cfg.qtyKey].v.trim()!=='') sum+=Number(v[cfg.qtyKey].v);
+        }
+      });
+      cfg.stats(n,sum);
+      return n;
+    }
+
+    function collect(){
+      var out=[];
+      allRows().forEach(function(tr){
+        if(!rowFilled(tr)) return;
+        var v=rowValues(tr), o={};
+        inputs.forEach(function(c){ o[c.k]=v[c.k].v.trim(); });
+        out.push(o);
+      });
+      return out;
+    }
+
+    function save(){
+      clearTimeout(timer);
+      timer=setTimeout(function(){
+        try{
+          localStorage.setItem(cfg.key,JSON.stringify(collect()));
+          var t=new Date();
+          cfg.savedEl.textContent='已保存 '+String(t.getHours()).padStart(2,'0')+':'+String(t.getMinutes()).padStart(2,'0');
+        }catch(e){ cfg.savedEl.textContent='无法保存（浏览器限制）'; }
+      },350);
+    }
+
+    function fillRows(data){
+      if(data && data.length){
+        data.forEach(function(r){ addRow(r); });
+        for(var i=data.length;i<8;i++) addRow(null);
+      } else {
+        for(var j=0;j<8;j++) addRow(null);
+      }
+      score();
+    }
+
+    function restore(){
+      var data=null;
+      try{ data=JSON.parse(localStorage.getItem(cfg.key)||'null'); }catch(e){}
+      if((!data || !data.length) && cfg.legacyKey){
+        try{
+          var old=JSON.parse(localStorage.getItem(cfg.legacyKey)||'null');
+          if(old && old.length) data=old.map(cfg.legacyMap||function(x){return x});
+        }catch(e){}
+      }
+      fillRows(data);
+      if(data && data.length) toast('已恢复上次填写的 '+data.length+' 条');
+    }
+
+    tbody.addEventListener('input',function(e){
+      var tr=e.target.closest('tr'); if(!tr) return;
+      var c=cfg.cols.filter(function(x){return x.k===e.target.getAttribute('data-k')})[0]||{};
+      if(e.target.type==='number'){
+        e.target.value=e.target.value.replace(/[^\d]/g,'');
+      }
+      if(c.upper){
+        var pos=e.target.selectionStart;
+        var up=e.target.value.toUpperCase().replace(/\s/g,'');
+        if(up!==e.target.value){
+          e.target.value=up;
+          try{ e.target.setSelectionRange(pos,pos); }catch(err){}
+        }
+      }
+      score(); save();
+    });
+
+    function exportRows(){
+      var list=collect();
+      if(!list.length){ toast('还没有填写内容'); return null; }
+      return list;
+    }
+
+    function csvText(){
+      var list=exportRows(); if(!list) return null;
+      var lines=[cfg.csvHeader.join(',')];
+      list.forEach(function(r){
+        lines.push(cfg.csvRow(r));
+      });
+      return {list:list, text:lines.join('\r\n')};
+    }
+
+    function copyText(){
+      var list=exportRows(); if(!list) return null;
+      return cfg.copyHeader.join('\t')+'\n'+list.map(function(r){return cfg.copyRow(r)}).join('\n');
+    }
+
+    return {
+      addRow:addRow, score:score, save:save, restore:restore,
+      exportRows:exportRows, csvText:csvText, copyText:copyText,
+      reset:function(){
+        tbody.innerHTML='';
+        for(var i=0;i<8;i++) addRow(null);
+        score(); save();
+      },
+      count:function(){ return collect().length; }
+    };
+  }
+
+  /* ---------------- 页一：备货单开白 ---------------- */
+  var wbTable=mkTable({
+    tbody:'tbodyWb',
+    key:'beihuo_wb_v1',
+    savedEl:document.getElementById('wbSaved'),
+    cols:[{k:'wb',type:'text',ph:'如 WB12345678',aria:'备货单号',upper:true}],
+    validate:function(v){
+      var s=v.wb.v.trim();
+      var bad=!!s && !/^WB/i.test(s);
+      v.wb.el.classList.toggle('bad',bad);
+      return !bad;
+    },
+    stats:function(n){
+      document.getElementById('wbN').textContent=n;
+      document.getElementById('wbBadge').textContent=n;
+    },
+    csvHeader:['备货单号'],
+    csvRow:function(r){ return '"'+r.wb.replace(/"/g,'""')+'"'; },
+    copyHeader:['备货单号'],
+    copyRow:function(r){ return r.wb; }
+  });
+
+  /* ---------------- 页二：备货需求填写 ---------------- */
+  var reqTable=mkTable({
+    tbody:'tbodyReq',
+    key:'beihuo_req_v1',
+    legacyKey:'beihuo_form_v2',
+    legacyMap:function(x){ return {d:x.d||'', s:x.s||'', q:x.q||''}; },
+    savedEl:document.getElementById('reqSaved'),
+    cols:[
+      {k:'d',type:'date',ph:'',aria:'日期'},
+      {k:'s',type:'text',ph:'填写货品SKU',aria:'货品SKU'},
+      {k:'q',type:'number',ph:'0',aria:'件数'}
+    ],
+    qtyKey:'q',
+    validate:function(v){
+      var q=v.q.v.trim(), bad=false;
+      if(q!==''){
+        var num=Number(q);
+        if(!isFinite(num)||num<=0||Math.floor(num)!==num) bad=true;
+      }
+      v.q.el.classList.toggle('bad',bad);
+      return !bad;
+    },
+    stats:function(n,sum){
+      document.getElementById('reqN').textContent=n;
+      document.getElementById('reqSum').textContent=sum.toLocaleString('en-US');
+      document.getElementById('reqBadge').textContent=n;
+    },
+    csvHeader:['日期','货品SKU','件数'],
+    csvRow:function(r){ return r.d+',"'+r.s.replace(/"/g,'""')+'",'+r.q; },
+    copyHeader:['日期','货品SKU','件数'],
+    copyRow:function(r){ return r.d+'\t'+r.s+'\t'+r.q; }
+  });
+
+  /* ---------------- 通用按钮 ---------------- */
+  function wire(prefix, table, fileBase, label){
+    document.getElementById(prefix+'Add1').onclick=function(){
+      var tr=table.addRow(null);
+      tr.querySelector('input').focus();
+      table.score(); table.save();
+    };
+    document.getElementById(prefix+'Add10').onclick=function(){
+      for(var i=0;i<10;i++) table.addRow(null);
+      table.score(); table.save();
+      toast('已添加 10 行');
+    };
+    document.getElementById(prefix+'Clear').onclick=function(){
+      if(!confirm('确定清空本页全部已填内容？此操作不可撤销。')) return;
+      table.reset();
+      toast('已清空');
+    };
+    document.getElementById(prefix+'Csv').onclick=function(){
+      var res=table.csvText(); if(!res) return;
+      var d=new Date();
+      var name=fileBase+'_'+d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')+'.csv';
+      var blob=new Blob(['\ufeff'+res.text],{type:'text/csv;charset=utf-8;'});
+      var a=document.createElement('a');
+      a.href=URL.createObjectURL(blob);
+      a.download=name;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function(){URL.revokeObjectURL(a.href)},1000);
+      toast('已导出 '+res.list.length+' '+label);
+    };
+    document.getElementById(prefix+'Copy').onclick=function(){
+      var txt=table.copyText(); if(!txt) return;
+      function done(){ toast('已复制，可直接粘贴到表格'); }
+      function fallback(){
+        var ta=document.createElement('textarea');
+        ta.value=txt; ta.style.position='fixed'; ta.style.opacity='0';
+        document.body.appendChild(ta); ta.select();
+        try{ document.execCommand('copy'); done(); }catch(e){ toast('复制失败，请用导出 CSV'); }
+        ta.remove();
+      }
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(txt).then(done,fallback);
+      } else { fallback(); }
+    };
+  }
+
+  wire('wb', wbTable, '备货单开白', '个单号');
+  wire('req', reqTable, '备货需求', '行');
+
+  wbTable.restore();
+  reqTable.restore();
+})();
+</script>
+</body>
+</html>
